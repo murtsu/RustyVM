@@ -1,0 +1,157 @@
+{
+  "schema_version": "1.0",
+  "description": "JSON schemas for all PM input and output message types. All messages include a status field: unread | pending | done.",
+
+  "common_fields": {
+    "note": "Every message includes these fields in addition to its type-specific fields",
+    "schema_version": "string — always 1.0",
+    "message_type": "string — see type list in CLAUDE.md",
+    "timestamp": "string — ISO 8601",
+    "from_role": "string — role abbreviation of sender",
+    "to_role": "string — role abbreviation of recipient",
+    "message_id": "string — unique ID following convention in CLAUDE.md e.g. REQ-CLIENT-0001",
+    "status": "string — enum: unread | pending | done"
+  },
+
+  "schemas": {
+
+    "client_request": {
+      "description": "A request, requirement, or feedback arriving from the client (Marko or external). Appended to pm_inbox.json.",
+      "type_specific_fields": {
+        "request_id": "string — same as message_id for requests",
+        "priority": "string — enum: critical | high | normal | low",
+        "category": "string — enum: new_requirement | change_request | feedback | question | approval_confirmation",
+        "subject": "string — one line summary",
+        "body": "string — full description of the request",
+        "attachments": "array of strings — file paths to supporting documents",
+        "requires_response_by": "string — ISO 8601 date or empty string if no deadline"
+      },
+      "category_notes": {
+        "new_requirement": "Client is requesting a new capability",
+        "change_request": "Client is requesting a change to existing scope",
+        "feedback": "Client is providing feedback, no immediate action required",
+        "question": "Client is asking for information",
+        "approval_confirmation": "Client is confirming approval of something PM submitted for sign-off. PM confirms receipt and updates the relevant state."
+      },
+      "example": {
+        "schema_version": "1.0",
+        "message_type": "client_request",
+        "timestamp": "2026-03-31T09:00:00Z",
+        "from_role": "client",
+        "to_role": "pm",
+        "message_id": "REQ-CLIENT-0001",
+        "status": "unread",
+        "priority": "high",
+        "category": "new_requirement",
+        "subject": "Add support for snapshot export to OVA format",
+        "body": "Users need to be able to export any snapshot as an OVA file for portability to other hypervisors. This should be accessible from the snapshot management UI.",
+        "attachments": [],
+        "requires_response_by": "2026-04-07T17:00:00Z"
+      }
+    },
+
+    "consolidated_report": {
+      "description": "Daily consolidated operational report from PPM to PM. One per day. Appended to pm_inbox.json.",
+      "type_specific_fields": {
+        "report_date": "string — ISO 8601 date e.g. 2026-03-31",
+        "overall_status": "string — enum: green | amber | red",
+        "overall_summary": "string — two to three sentences maximum",
+        "role_statuses": "array of role_status_object",
+        "active_blockers": "array of blocker_object",
+        "decisions_needed": "array of decision_request_object",
+        "completed_since_last_report": "array of strings — task IDs completed",
+        "metrics": "metrics_object"
+      },
+      "role_status_object": {
+        "role": "string — role abbreviation e.g. sd, spm, cr",
+        "status": "string — enum: green | amber | red",
+        "summary": "string — one sentence",
+        "active_tasks": "integer",
+        "blocked_tasks": "integer"
+      },
+      "blocker_object": {
+        "blocker_id": "string — e.g. BLK-PPM-0001",
+        "blocking_role": "string — role abbreviation",
+        "blocked_since": "string — ISO 8601",
+        "description": "string",
+        "proposed_resolution": "string — or empty string if none",
+        "requires_pm_decision": "boolean"
+      },
+      "decision_request_object": {
+        "decision_id": "string — e.g. DEC-PPM-0001",
+        "requested_by": "string — role abbreviation",
+        "subject": "string",
+        "context": "string",
+        "options": "array of strings",
+        "recommendation": "string — PPM recommendation or empty string",
+        "deadline": "string — ISO 8601 or empty string"
+      },
+      "metrics_object": {
+        "tasks_total": "integer",
+        "tasks_in_progress": "integer",
+        "tasks_completed_this_cycle": "integer",
+        "tasks_blocked": "integer",
+        "coder_queue_depth_avg": "number — average tasks waiting per coder",
+        "open_defects": "integer",
+        "open_security_findings": "integer"
+      }
+    },
+
+    "escalation": {
+      "description": "An escalation from any role that cannot be resolved without PM involvement. Appended to pm_inbox.json.",
+      "type_specific_fields": {
+        "severity": "string — enum: critical | high | normal",
+        "escalation_status": "string — enum: open | acknowledged | resolved",
+        "category": "string — enum: technical_blocker | resource_conflict | scope_dispute | security_finding | quality_failure | external_dependency",
+        "subject": "string",
+        "description": "string — full description of the issue",
+        "already_attempted": "array of strings — what has already been tried",
+        "options": "array of strings — possible resolutions",
+        "recommendation": "string — escalating role's recommendation or empty string",
+        "blocking_tasks": "array of strings — task IDs blocked by this escalation",
+        "requires_response_by": "string — ISO 8601 or empty string",
+        "resolved_by": "string — decision message_id that resolved this, or empty string"
+      }
+    },
+
+    "pm_decision": {
+      "description": "A decision made by the PM in response to a decision_request, escalation, or client_request. Written to relevant role outbox.",
+      "type_specific_fields": {
+        "in_response_to": "string — message_id of the originating message this resolves",
+        "decision": "string — enum: approved | rejected | deferred | modified",
+        "rationale": "string — full explanation. Mandatory. Never empty.",
+        "instructions": "string — what the recipient must do next. Mandatory. Never empty.",
+        "affects_roles": "array of strings — role abbreviations of other roles that must be notified",
+        "deadline": "string — ISO 8601 or empty string"
+      }
+    },
+
+    "client_report": {
+      "description": "A status report produced by PM for the client. Written to pm_to_client.json outbox.",
+      "type_specific_fields": {
+        "period_covered": "string — human readable e.g. Week of 2026-03-31",
+        "overall_status": "string — enum: green | amber | red",
+        "executive_summary": "string — three to five sentences for non-technical reader",
+        "progress_this_period": "array of strings — what was completed",
+        "planned_next_period": "array of strings — what is planned",
+        "issues_and_risks": "array of strings — current concerns",
+        "decisions_required": "array of strings — what the client needs to decide",
+        "metrics": "client_report_metrics_object"
+      },
+      "client_report_metrics_object": {
+        "milestones_on_track": "integer",
+        "milestones_at_risk": "integer",
+        "open_client_requests": "integer"
+      }
+    },
+
+    "convention_request": {
+      "description": "Written by any agent to the PM inbox when a situation is not covered by CLAUDE.md or the role file. Agent waits for PM decision before proceeding.",
+      "type_specific_fields": {
+        "situation": "string — full description of the uncovered situation",
+        "proposed_convention": "string — what convention the agent proposes",
+        "blocking_task": "string — task ID blocked by this gap, or empty string"
+      }
+    }
+  }
+}
