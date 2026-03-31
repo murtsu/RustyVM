@@ -17,7 +17,7 @@ If a patch eats your environment.
 If someone runs the wrong command.
 If you run the wrong command.
 
-You restore the entire system drive to its original state.
+You rebuild the entire system drive to its original state.
 
 In five seconds.
 
