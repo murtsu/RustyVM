@@ -157,7 +157,6 @@ It will explain why things are designed the way they are.
 | Component | Status |
 |---|---|
 | Bash prototype | Working |
-| Patent application | Pending |
 | Rust rewrite | In progress |
 | Agent org structure | Defined, v2.0 |
 | Desktop UI | Designed, not yet built |
