@@ -1,0 +1,21 @@
+RostadVM
+Copyright 2026 Marko Tahvanainen
+
+This prodct includes software developed by Marko Tahvanainen.
+
+The copy-on-write restore mechanism at the core of this framework
+is the subject of a pending patent application.
+
+Original author: Marko Tahvanainen
+Project origin: Sweden, 2026
+Repository: https://github.com/murtsu/RostadVM
+
+---
+
+This NOTICE file is required to be included in all distributions
+of this software or any derivative works, in accordance with the
+Apache License, Version 2.0.
+
+Retention of this NOTICE file is mandatory. Removal or modification
+of the attribution statements contained herein is not permitted
+under the terms of the Apache License, Version 2.0.
