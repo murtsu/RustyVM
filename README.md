@@ -1,4 +1,4 @@
-# VM Framework
+# RostadVM
 
 **This project is young. It is a work in progress. It will stay that way for a while.**
 
